@@ -280,6 +280,27 @@ h2.sec{margin:22px 0 8px;font-size:24px}
 .crow[aria-pressed="true"] span{color:var(--num);font-weight:700}
 .map .ct.sel{stroke:var(--hi);stroke-width:1.4}
 .agebars{height:90px;margin-top:10px}
+@media (min-width:900px){
+.wrap{max-width:1180px;padding-left:32px;padding-right:32px}
+.hero{display:flex;flex-direction:column;align-items:flex-start;padding:26px 30px}
+.hero .ph{font-size:38px;max-width:900px}
+.hero p{font-size:17px;max-width:720px}
+.kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.pstrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;overflow:visible}
+.pstrip .pt{flex:none}
+.p3{gap:14px}
+.p3 .pt .th{aspect-ratio:4/3}
+.pt .pv{font-size:30px}
+.pt .px{font-size:13px}
+.pt .pd{font-size:12px}
+.p3 .pt .th.cover i{font-size:calc(11px*var(--fs,1))}
+.hub{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.4fr);gap:14px}
+.hc.wide,.hc.wide-sm{grid-column:auto}
+#tail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 24px;align-items:start}
+#tail>h2.sec:first-child{grid-column:1}#tail>#coach{grid-column:1}
+#tail>#join{grid-column:2;grid-row:1}#tail>#wl{grid-column:2;grid-row:2}
+#tail>.foot{grid-column:1/-1}
+}
 </style>
 
 <div class="wrap">
@@ -501,9 +522,9 @@ function home(){
   h+=`<h2 class="sec">Recent Posts</h2><div class="pstrip">${LAST5.map(tile).join("")}</div>`;
   h+=`<h2 class="sec">Top posts</h2><div class="ctrl2"><div class="seg sm"><button data-tw="all" aria-pressed="${topWin==="all"}">All time</button><button data-tw="30" aria-pressed="${topWin==="30"}">Last 30 days</button></div></div><div class="p3" id="toplist">${(topWin==="all"?TOPALL:TOP30).slice(0,3).map(tile).join("")}</div>`;
   const dd=donutData(30,"pillar");
-  h+=`<div class="hub">`+hc({id:"split",title:"Views by pillar",viz:`<div class="dmini2">${donut(30,92,"pillar")}<div class="leg">${dd.top.slice(0,3).map(x=>`<div><span class="sw" style="background:${pcol(x.k)}"></span>${esc(PILLARS[x.k]?PILLARS[x.k][0]:x.k)} <b>${Math.round(x.views/dd.tot*100)}%</b></div>`).join("")}</div></div>`})+hc({id:"cal",title:"Posts by day",viz:calendar(5,26)})+`</div>`;
+  h+=`<div class="hub">`+hc({id:"split",title:"Views by pillar",viz:`<div class="dmini2">${donut(30,92,"pillar")}<div class="leg">${dd.top.slice(0,3).map(x=>`<div><span class="sw" style="background:${pcol(x.k)}"></span>${esc(PILLARS[x.k]?PILLARS[x.k][0]:x.k)} <b>${Math.round(x.views/dd.tot*100)}%</b></div>`).join("")}</div></div>`})+hc({id:"cal",title:"Posts by day",viz:calendar(5,26)});
   const tc=rowsOf("Reached · country").slice().sort((a,b)=>b.v-a.v).slice(0,3);
-  h+=`<div class="hub" style="margin-top:10px">`+hc({id:"aud",title:"Audience breakdown",wide:1,s:"Top: "+tc.map(c=>esc(cname(c.place))+" "+pctS(c.v)).join(" · ")+". Tap for the follower breakdown.",viz:worldMap(1)})+`</div>`;
+  h+=hc({id:"aud",title:"Audience breakdown",wide:1,s:"Top: "+tc.map(c=>esc(cname(c.place))+" "+pctS(c.v)).join(" · ")+". Tap for the follower breakdown.",viz:worldMap(1)})+`</div>`;
   return h}
 function short2(n){return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e4?Math.round(n/1e3)+"K":fmt(n)}
 
