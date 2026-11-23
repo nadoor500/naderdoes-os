@@ -221,7 +221,7 @@ div.kpi{cursor:default}
 .cal{display:block;max-width:420px;margin:0 auto}.cal .cn{fill:var(--ink-soft);font-weight:700;pointer-events:none}.cal .cn.g2,.cal .cn.w{fill:#fff}.cal .cd.today{stroke:var(--hi);stroke-width:2}.cal .cg[data-panel]{cursor:pointer}.cal .cd{fill:transparent;stroke:var(--line)}.cal .cd.n{fill:var(--track);stroke:none}.cal .cd.g1{fill:color-mix(in srgb,var(--good) 50%,transparent);stroke:none}.cal .cd.g2{fill:var(--good);stroke:none}.cal .cd.w{fill:var(--bad);stroke:none;opacity:.8}
 .cal .cg:hover .cd{stroke:var(--ink);stroke-width:1.5}
 .map{width:100%;height:auto;display:block}.map .ct{fill:var(--track);stroke:var(--card);stroke-width:.4}.map .ct.on{fill:var(--num)}.map .ct.on:hover{fill:var(--hi);fill-opacity:1!important}
-.map .cb{fill:var(--hi);fill-opacity:.55;stroke:var(--card);stroke-width:1}.map .cb:hover{fill-opacity:.95}
+.map .cb{fill-opacity:.8;stroke:var(--card);stroke-width:1}.map .cb:hover{fill-opacity:1}
 .minibars{display:flex;align-items:flex-end;gap:3px;height:54px}.minibars i{flex:1;background:var(--num);border-radius:3px 3px 0 0;opacity:.85}
 .hbar.sm{font-size:12.5px;gap:5px 8px;grid-template-columns:minmax(0,96px) 1fr auto}.hbar.sm .bar{height:7px}
 @media (max-width:420px){.kpi .v{font-size:24px}.hc-v{font-size:28px}.ph{font-size:28px}}
@@ -283,7 +283,7 @@ h2.sec{margin:22px 0 8px;font-size:24px}
 .pt.open .hint{display:none}
 .dmini2{display:flex;flex-direction:column;align-items:center;gap:8px}.dmini2 .donut{width:92px;height:92px}.dmini2 .leg{width:100%;font-size:12px}
 .hub .hc .cal{max-width:none}
-.crow{display:grid;grid-template-columns:minmax(0,92px) 1fr 44px;gap:8px;align-items:center;width:100%;background:none;border:0;color:var(--ink);font:inherit;font-size:14px;padding:7px 0;cursor:pointer;text-align:left}
+.crow{display:grid;grid-template-columns:minmax(0,120px) 1fr 44px;gap:8px;align-items:center;width:100%;background:none;border:0;color:var(--ink);font:inherit;font-size:14px;padding:7px 0;cursor:pointer;text-align:left}
 .crow .bar{height:9px}.crow b{text-align:right;font-variant-numeric:tabular-nums}
 .crow[aria-pressed="true"] span{color:var(--num);font-weight:700}
 .map .ct.sel{stroke:var(--hi);stroke-width:1.4}
@@ -318,7 +318,7 @@ h2.sec{margin:22px 0 8px;font-size:24px}
   </header>
   <main id="view" class="fade"></main>
   <div id="tail">
-    <h2 class="sec">From my Social Media Coach</h2>
+    <h2 class="sec">From my Social Media System</h2>
     <div class="card" id="coach"></div>
     <h2 class="sec" id="join">Want one? Leave your email</h2>
     <form class="card stack" id="wl" novalidate>
@@ -456,9 +456,11 @@ let MAPL="Reached · country";
 function worldMap(mini){if(typeof GEO==="undefined")return "";const G=geoWeek();const W=GEO.w,H=GEO.h;
   const list=G?G.rows.filter(r=>r.list===(MAPL==="cities"?"Reached · country":MAPL)):[];const by={};list.forEach(r=>by[r.place]=r.v);const mx=Math.max(1,...list.map(r=>r.v));
   let g=`<svg class="map" viewBox="0 0 ${W} ${H}" role="img" aria-label="Where your audience is">`;
-  Object.entries(GEO.c).forEach(([k,d])=>{const v=by[k];const f=v?.18+.82*Math.sqrt(v/mx):0;g+=`<path d="${d}" class="ct${v?" on":""}${k===selC?" sel":""}" ${v?`style="fill-opacity:${f.toFixed(2)}" data-c="${k}" data-tip="${esc(cname(k)+" · "+pctS(v)+" of reach")}"`:""}/>`});
-  if(G&&(MAPL==="cities"||mini)){const cs=G.rows.filter(r=>r.list==="Reached · city");const cm=Math.max(1,...cs.map(r=>r.v));cs.forEach(r=>{const xy=GEO.city[r.place];if(!xy)return;g+=`<circle class="cb" cx="${xy[0]}" cy="${xy[1]}" r="${(2+9*Math.sqrt(r.v/cm)).toFixed(1)}" data-tip="${esc(r.place+" · "+pctS(r.v)+" of reach")}"/>`})}
+  Object.entries(GEO.c).forEach(([k,d])=>{const v=by[k];const f=v?.35+.65*Math.sqrt(v/mx):0;g+=`<path d="${d}" class="ct${v?" on":""}${k===selC?" sel":""}" ${v?`style="fill:${ccol(k,G)};fill-opacity:${f.toFixed(2)}" data-c="${k}" data-tip="${esc(cname(k)+" · "+pctS(v)+" of reach")}"`:""}/>`});
+  if(G&&(MAPL==="cities"||mini)){const cs=G.rows.filter(r=>r.list==="Reached · city");const cm=Math.max(1,...cs.map(r=>r.v));cs.forEach(r=>{const xy=GEO.city[r.place];if(!xy)return;g+=`<circle class="cb" style="fill:${ccol(CITYC[r.place]||"",G)}" cx="${xy[0]}" cy="${xy[1]}" r="${(2+9*Math.sqrt(r.v/cm)).toFixed(1)}" data-tip="${esc(r.place+" · "+pctS(r.v)+" of reach")}"/>`})}
   return g+`</svg>`}
+const CPAL=["#2F6FCC","#E0682B","#23854C","#C7337E","#6A45C9","#0E7F7C","#B8902A","#B83232","#4A6B8A","#8A5A2B"];
+function ccol(code,G){const ord=(G?G.rows.filter(r=>r.list==="Reached · country").sort((a,b)=>b.v-a.v).map(r=>r.place):[]);const i=ord.indexOf(code);return i>=0&&i<CPAL.length?CPAL[i]:"#8C8C8C"}
 const CN={AE:"UAE",US:"USA",GB:"UK",IN:"India",AU:"Australia",CA:"Canada",PK:"Pakistan",DE:"Germany",SA:"Saudi Arabia",TR:"Türkiye",JO:"Jordan",ZA:"South Africa",KW:"Kuwait",QA:"Qatar",IL:"Israel",FR:"France",IT:"Italy",BE:"Belgium",MA:"Morocco",EG:"Egypt",LB:"Lebanon",OM:"Oman",BH:"Bahrain",NL:"Netherlands",ES:"Spain",SG:"Singapore",PH:"Philippines",NZ:"New Zealand",IE:"Ireland",CH:"Switzerland",SE:"Sweden",PL:"Poland",RO:"Romania",GR:"Greece",BR:"Brazil",ID:"Indonesia",MY:"Malaysia",NP:"Nepal",BD:"Bangladesh",LK:"Sri Lanka",HK:"Hong Kong",CZ:"Czechia",TN:"Tunisia",RS:"Serbia",BG:"Bulgaria",HU:"Hungary",SK:"Slovakia",FI:"Finland",TH:"Thailand",MX:"Mexico",NG:"Nigeria",KE:"Kenya",JP:"Japan",KR:"South Korea",CN:"China",RU:"Russia",UA:"Ukraine",IQ:"Iraq",IR:"Iran",DZ:"Algeria"};
 const cname=k=>CN[k]||k;
 function hc(o){return `<button class="hc ${o.wide==="sm"?"wide-sm":o.wide?"wide":""}" data-panel="${esc(o.id)}"><div class="hc-h"><span>${esc(o.title)}</span>${chev}</div>${o.v!=null?`<div class="hc-v">${o.v}</div>`:""}${o.s?`<div class="hc-s">${o.s}</div>`:""}${o.viz?`<div class="hc-viz">${o.viz}</div>`:""}</button>`}
@@ -466,7 +468,7 @@ function splitPanel(){const D2=donutData(SPLITD);const pct=v=>Math.round(v/D2.to
   const rows=D2.by==="pillar"?D2.top.map(x=>`<div class="lg-row"><span class="sw" style="background:${pcol(x.k)}"></span><b style="flex:1">${esc(PILLARS[x.k]?PILLARS[x.k][0]:x.k)}</b><span class="muted">${pct(x.views)}</span><b style="min-width:56px;text-align:right">${fmt(x.views)}</b></div>`).join("")
    :D2.top.slice(0,8).map(p=>{const b=p.b||{};return `<div class="lg-row" ${b.link?`data-href="${esc(b.link)}"`:""}>${thumbOf(p,"xs")}<div style="min-width:0;flex:1" class="t2 one"><span class="sw" style="background:${pcol(b.pillar)};display:inline-block;margin-right:5px"></span>${esc(cap(p.title))}</div><b>${fmt(p.views)}</b></div>`}).join("")+(D2.rest.length?`<div class="lg-row"><span class="sw" style="background:var(--track)"></span><div style="flex:1" class="t2">${D2.rest.length+Math.max(0,D2.top.length-8)} other posts</div><b>${fmt(D2.restV+D2.top.slice(8).reduce((a,p)=>a+p.views,0))}</b></div>`:"");
   const sz=innerWidth<600?150:220;
-  return `<div class="khead"><h1 class="ph sm">Where your views came from</h1>${pkey(D2.by==="pillar"?D2.top.map(x=>x.k):D2.top.map(p=>p.b&&p.b.pillar))}</div><div class="ctrl2"><div class="seg sm">${[7,30].map(d=>`<button data-sd="${d}" aria-pressed="${SPLITD===d}">${d}d</button>`).join("")}</div></div>
+  return `<div class="khead"><h1 class="ph sm">Where your views came from</h1>${pkey(D2.by==="pillar"?D2.top.map(x=>x.k):D2.top.map(p=>p.b&&p.b.pillar))}</div><div class="ctrl2"><div class="seg sm">${[7,30,90].map(d=>`<button data-sd="${d}" aria-pressed="${SPLITD===d}">${d}d</button>`).join("")}</div><div class="seg sm">${[["pillar","Pillar"],["video","Video"]].map(([k,l])=>`<button data-sb="${k}" aria-pressed="${SPLITBY===k}">${l}</button>`).join("")}</div></div>
    <div class="card split"><div class="dwrap">${donut(SPLITD,sz)}<div class="small muted" style="text-align:center;margin-top:4px">Tap a slice</div></div><div class="legendcol">${rows}</div></div>`}
 function calPanel(){return `<h1 class="ph">Every post, by day</h1><div class="card">${calendar(10,40)}<div class="legend" style="margin-top:10px"><span style="--c:var(--good)">2x+ your normal</span><span style="--c:color-mix(in srgb,var(--good) 50%,transparent)">1.15–2x</span><span style="--c:var(--track)">normal</span><span style="--c:var(--bad)">0.75x or less</span><span style="--c:transparent;outline:1px solid var(--line)">no post</span></div><div class="small muted" style="margin-top:8px">Each square is a day, coloured by its best post vs your normal (scrap-only days stay grey). Tap a day for its posts.</div></div>`}
 let vtip=null;function showTip(t,x,y){if(!vtip){vtip=document.createElement("div");vtip.className="vtip";document.body.appendChild(vtip)}vtip.textContent=t;vtip.style.left=Math.min(innerWidth-140,Math.max(140,x))+"px";vtip.style.top=Math.max(40,y)+"px";vtip.hidden=false}
@@ -545,7 +547,7 @@ function home(){
   h+=`<h2 class="sec">Recent Posts</h2><div class="pstrip">${recentP().map(tile).join("")}</div>`;
   h+=`<h2 class="sec">Top posts</h2><div class="ctrl2"><div class="seg sm"><button data-tw="all" aria-pressed="${topWin==="all"}">All time</button><button data-tw="30" aria-pressed="${topWin==="30"}">Last 30 days</button></div></div><div class="p3" id="toplist">${topP(topWin).slice(0,3).map(tile).join("")}</div>`;
   const dd=donutData(30,"pillar");
-  h+=`<div class="hub">`+hc({id:"split",title:"Views by pillar",viz:`<div class="dmini2">${donut(30,92,"pillar")}<div class="leg">${dd.top.slice(0,3).map(x=>`<div><span class="sw" style="background:${pcol(x.k)}"></span>${esc(PILLARS[x.k]?PILLARS[x.k][0]:x.k)} <b>${Math.round(x.views/dd.tot*100)}%</b></div>`).join("")}</div></div>`})+hc({id:"cal",title:"Posts by day",viz:calendar(5,26)});
+  h+=`<div class="hub">`+hc({id:"split",title:"Views, last 30 days",wide:"sm",viz:`<div class="dmini">${donut(30,128,"pillar")}<div class="leg">${dd.top.slice(0,4).map(x=>`<div><span class="sw" style="background:${pcol(x.k)}"></span>${esc(PILLARS[x.k]?PILLARS[x.k][0]:x.k)} <b>${Math.round(x.views/dd.tot*100)}%</b></div>`).join("")}</div></div>`})+hc({id:"cal",title:"Posts by day",viz:calendar(5,26)});
   const tc=rowsOf("Reached · country").slice().sort((a,b)=>b.v-a.v).slice(0,3);
   h+=hc({id:"aud",title:"Audience breakdown",wide:1,s:"Top: "+tc.map(c=>esc(cname(c.place))+" "+pctS(c.v)).join(" · ")+". Tap for the follower breakdown.",viz:worldMap(1)})+`</div>`;
   return h}
@@ -557,12 +559,12 @@ const CITYC={Dubai:"AE","Abu Dhabi":"AE",Sharjah:"AE",Ajman:"AE",Bangalore:"IN",
 let GW=null,REACHTOT=1;const rowsOf=l=>GW?GW.rows.filter(r=>r.list===l):[];
 const pctS=v=>{const p=v/REACHTOT*100;return p>=1?Math.round(p)+"%":p>=.1?p.toFixed(1)+"%":"<1%"};
 let selC="";
-function audBox(){const cs=rowsOf("Reached · country").slice().sort((a,b)=>b.v-a.v);const top=cs.slice(0,3),mx=top[0].v;const eng={};rowsOf("Engaged · country").forEach(r=>eng[r.place]=r.v);
-  let d=`<div class="hc-h"><span>Where it reached</span></div><div class="hc-s">Share of everyone reached. Tap a country for its numbers.</div><div class="hc-viz">${worldMap(1)}</div>`;
-  d+=top.map(r=>`<button class="crow" data-ct="${esc(r.place)}" aria-pressed="${selC===r.place}"><span>${esc(cname(r.place))}</span><div class="bar"><i style="width:${r.v/mx*100}%"></i></div><b>${pctS(r.v)}</b></button>`).join("");
+function audBox(){const G=GW;const cities=MAPL==="cities";const cs=rowsOf("Reached · country").slice().sort((a,b)=>b.v-a.v);const L=(cities?rowsOf("Reached · city"):cs).slice().sort((a,b)=>b.v-a.v).slice(0,10);const mx=Math.max(1,...L.map(r=>r.v));const eng={};rowsOf("Engaged · country").forEach(r=>eng[r.place]=r.v);
+  let d=`<div class="hc-h"><span>Where it reached</span></div><div class="hc-s">Share of everyone reached. ${cities?"Each city takes its country's colour.":"Tap a country for its numbers."}</div><div class="ctrl2" style="margin:8px 0"><div class="seg sm">${[["Reached · country","Countries"],["cities","Cities"]].map(([k,l])=>`<button data-ml="${k}" aria-pressed="${MAPL===k}">${l}</button>`).join("")}</div></div><div class="hc-viz">${worldMap(1)}</div>`;
+  d+=L.map(r=>{const col=ccol(cities?(CITYC[r.place]||""):r.place,G);const nm=cities?r.place:cname(r.place);return cities?`<div class="crow" style="cursor:default"><span style="display:flex;align-items:center;gap:6px;min-width:0"><i class="sw" style="background:${col}"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nm)}</span></span><div class="bar"><i style="width:${r.v/mx*100}%;background:${col}"></i></div><b>${pctS(r.v)}</b></div>`:`<button class="crow" data-ct="${esc(r.place)}" aria-pressed="${selC===r.place}"><span style="display:flex;align-items:center;gap:6px;min-width:0"><i class="sw" style="background:${col}"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nm)}</span></span><div class="bar"><i style="width:${r.v/mx*100}%;background:${col}"></i></div><b>${pctS(r.v)}</b></button>`}).join("");
   const r=cs.find(x=>x.place===selC);
-  if(r){const cities=rowsOf("Reached · city").filter(c=>CITYC[c.place]===selC).sort((a,b)=>b.v-a.v);const e=eng[selC];
-    d+=`<div class="daypanel"><div style="font-weight:700;margin-bottom:8px">${esc(cname(selC))}</div><div class="mini"><div><b>${fmt(r.v)}</b><span>People reached</span></div><div><b>${pctS(r.v)}</b><span>Of all reach</span></div><div><b>${e?fmt(e):"under 8"}</b><span>Engaged</span></div></div>${cities.length?`<div class="small muted" style="margin-top:8px">Top cities: ${cities.map(c=>esc(c.place)+" "+fmt(c.v)).join(" · ")}</div>`:""}</div>`}
+  if(!cities&&r){const cl=rowsOf("Reached · city").filter(c=>CITYC[c.place]===selC).sort((a,b)=>b.v-a.v);const e=eng[selC];
+    d+=`<div class="daypanel"><div style="font-weight:700;margin-bottom:8px">${esc(cname(selC))}</div><div class="mini"><div><b>${fmt(r.v)}</b><span>People reached</span></div><div><b>${pctS(r.v)}</b><span>Of all reach</span></div><div><b>${e?fmt(e):"under 8"}</b><span>Engaged</span></div></div>${cl.length?`<div class="small muted" style="margin-top:8px">Top cities: ${cl.map(c=>esc(c.place)+" "+fmt(c.v)).join(" · ")}</div>`:""}</div>`}
   return d}
 let AGW="Followers";
 function ageBox(){const age=rowsOf(AGW+" · age"),gen=rowsOf(AGW+" · gender");const at=age.reduce((a,r)=>a+r.v,0)||1,gt=gen.reduce((a,r)=>a+r.v,0)||1,am=Math.max(...age.map(r=>r.v),1);const GC={Men:"var(--c1)",Women:"var(--c2)"};
@@ -595,6 +597,7 @@ function render(){const v=$("#view");v.innerHTML=sub?panelView(sub):home();$("#t
 function bindTiles(){document.querySelectorAll(".pt").forEach(el=>{const t=()=>{const o=el.classList.toggle("open");el.setAttribute("aria-expanded",o)};el.onclick=e=>{if(e.target.closest("a"))return;t()};el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t()}}})}
 function bindAud(){const ab=$("#audbox"),gb=$("#agebox");if(!ab)return;
   const pick=c=>{selC=selC===c?"":c;ab.innerHTML=audBox();bindAud()};
+  ab.querySelectorAll("[data-ml]").forEach(b=>b.onclick=()=>{MAPL=b.dataset.ml;selC="";ab.innerHTML=audBox();bindAud()});
   ab.querySelectorAll("[data-ct]").forEach(b=>b.onclick=()=>pick(b.dataset.ct));
   ab.querySelectorAll(".ct.on[data-c]").forEach(p=>p.addEventListener("click",()=>pick(p.dataset.c)));
   gb.querySelectorAll("[data-agw]").forEach(b=>b.onclick=()=>{AGW=b.dataset.agw;gb.innerHTML=ageBox();bindAud()})}
@@ -607,6 +610,7 @@ function bind(){
   document.querySelectorAll("[data-plat]").forEach(b=>b.onclick=()=>{PLAT=b.dataset.plat;try{localStorage.setItem("ndos-pub-plat",PLAT)}catch(e){}render()});
   document.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TM=b.dataset.tm;render()});
   document.querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>{TR=b.dataset.tr;render()});
+  document.querySelectorAll("[data-sb]").forEach(b=>b.onclick=()=>{SPLITBY=b.dataset.sb;render()});
   document.querySelectorAll("[data-sd]").forEach(b=>b.onclick=()=>{SPLITD=+b.dataset.sd;render()});
   document.querySelectorAll("svg.lc").forEach(svg=>{const c=CH[svg.dataset.ch];if(!c)return;const gl=svg.querySelector(".guide"),gd=svg.querySelector(".gdot");
     const mv=e=>{const r=svg.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*c.W;let best=c.pts[0];c.pts.forEach(p=>{if(Math.abs(p.x-x)<Math.abs(best.x-x))best=p});
@@ -620,7 +624,7 @@ applyTheme();setInterval(applyTheme,300000);
 /* ---------- header, coach, waitlist ---------- */
 function paint(){const p=String(META.synced||"").split(" ");const last=new Date(S.today-DAYMS);
   $("#hdrDate").textContent="Data to "+last.getDate()+" "+MON[last.getMonth()]+(p[1]?" · updated "+p[1]:"");
-  const c=(META.coach||[]).filter(Boolean);$("#coach").innerHTML=c.length?c.map(x=>`<div style="font-family:var(--serif);font-size:21px;line-height:1.3;margin:0 0 8px">${esc(x)}</div>`).join(""):`<div class="muted">My coach leaves a note here after each weekly review. The first one lands soon.</div>`;
+  const c=(META.coach||[]).filter(Boolean);$("#coach").innerHTML=c.length?c.map(x=>`<div style="font-family:var(--serif);font-size:21px;line-height:1.3;margin:0 0 8px">${esc(x)}</div>`).join(""):`<div class="muted">My system leaves a note here after each weekly review. The first one lands soon.</div>`;
   $("#count").textContent=META.waitlist>=5?"You would be #"+(META.waitlist+1)+" to sign up.":"Be one of the first."}
 let role="";
 document.querySelectorAll("#wl .fchips button").forEach(c=>c.addEventListener("click",()=>{const on=c.getAttribute("aria-pressed")==="true";document.querySelectorAll("#wl .fchips button").forEach(x=>x.setAttribute("aria-pressed","false"));role=on?"":c.dataset.v;if(!on)c.setAttribute("aria-pressed","true")}));
