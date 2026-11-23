@@ -246,6 +246,14 @@ div.kpi{cursor:default}
 @media (min-width:1000px){.ph-only{display:none!important}}
 @media (prefers-reduced-motion:no-preference){.fade{animation:fd .25s ease}@keyframes fd{from{opacity:.4}to{opacity:1}}}
 /* public viewer additions */
+:root{--ig:#C82D7A;--tt:#0E9AA0}:root[data-theme="dark"]{--ig:#F06AAE;--tt:#3FE3E8}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ig:#F06AAE;--tt:#3FE3E8}}
+.pf{display:inline-flex;align-items:center;gap:4px;font:700 10.5px var(--body);letter-spacing:.04em;padding:2px 8px;border-radius:999px;color:#fff;white-space:nowrap;vertical-align:1px}.pf.ig{background:var(--ig)}.pf.tt{background:#111;color:#3FE3E8;box-shadow:inset 0 0 0 1px #3FE3E8}
+.seg button[data-plat="ig"]::before,.seg button[data-plat="tt"]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}.seg button[data-plat="ig"]::before{background:var(--ig)}.seg button[data-plat="tt"]::before{background:var(--tt)}
+.card.post.tt{box-shadow:inset 0 3px 0 var(--tt)}.card.post.ig{box-shadow:inset 0 3px 0 var(--ig)}
+.pt.tt{box-shadow:inset 0 3px 0 var(--tt)}.pt.ig{box-shadow:inset 0 3px 0 var(--ig)}
+.pt .ext.tt{color:var(--tt)}.pt .ext.ig{color:var(--ig)}
+.pt .pf{font-size:9.5px;padding:1px 6px}
+
 .wrap{padding-block:8px 56px}
 input[type=email]{width:100%;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:16px var(--body);padding:10px 12px}
 .hero .ph{font-size:27px;line-height:1.18;margin:0}
@@ -490,37 +498,52 @@ const med=a=>{a=a.slice().sort((x,y)=>x-y);const m=Math.floor(a.length/2);return
 function fromLive(pubT,metaT,audT){
   const M={};csv(metaT).forEach(r=>{if(r[0])M[r[0]]=r[1]});
   const cs=String(M.cutoff||"").trim();let cutoff;if(/^\d{5}$/.test(cs))cutoff=+cs;else{const m=cs.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(!m)throw new Error("cutoff");cutoff=Math.round((Date.UTC(+m[1],+m[2]-1,+m[3])-Date.UTC(1899,11,30))/DAYMS)}
-  const thumbs={};const perf=[];
+  const thumbs={};const perf=[];const tts=[];
   csv(pubT).slice(1).forEach(r=>{if(!r[0]||!/^\d+$/.test(String(r[6]).trim()))return;const views=parseFloat(r[8]);if(isNaN(views))return;const n=x=>{const v=parseFloat(x);return isNaN(v)?0:v};
+    if(r[17]==='tt'){const tx=parseFloat(r[18]);tts.push({plat:'tt',tid:r[0],cid:r[1],title:r[2],type:r[5]||'Reel',date:+sd(+r[6]),views,likes:n(r[10]),comments:n(r[11]),shares:n(r[12]),saves:NaN,skip:NaN,reach:NaN,x:isNaN(tx)?NaN:tx,b:{pillar:r[4],link:r[15]||''},ig:''});return}
     const o={ig:r[0],title:r[2],type:r[5]||"Reel",date:+sd(+r[6]),grid:r[7]==="Yes",views,reach:n(r[9]),likes:n(r[10]),comments:n(r[11]),shares:n(r[12]),saves:n(r[13]),skip:r[14]===""?NaN:parseFloat(r[14]),b:{pillar:r[4],link:r[15]||""}};
     if(r[16]&&r[16].indexOf("data:image")===0)thumbs[r[0]]=r[16];perf.push(o)});
   if(perf.length<20)throw new Error("too few rows");
+  const byC={};perf.forEach(p=>{});csv(pubT).slice(1).forEach(r=>{if(r[1]&&r[17]!=='tt')byC[r[1]]=r[0]});tts.forEach(t=>{t.ig=byC[t.cid]||''});
   const c0=(cutoff-30)*DAYMS+ +sd(0)-0;const t30=+sd(cutoff)-30*DAYMS;
   const byV=a=>a.slice().sort((x,y)=>y.views-x.views).slice(0,10);
-  return {perf,last5:perf.filter(p=>p.grid).sort((a,b)=>b.date-a.date).slice(0,5),topAll:byV(perf),top30:byV(perf.filter(p=>p.date>=t30)),median:med(perf.map(p=>p.views)),cutoff,thumbs,
+  return {perf,last5:perf.filter(p=>p.grid).sort((a,b)=>b.date-a.date).slice(0,5),topAll:byV(perf),top30:byV(perf.filter(p=>p.date>=t30)),median:med(perf.map(p=>p.views)),cutoff,thumbs,tt:tts,
     aud:csv(audT).filter(r=>r[0]&&r[2]).map(r=>[r[0],r[1],r[2],r[3]]),
     meta:{synced:M.synced_at||"",coach:[M.coach_1,M.coach_2],waitlist:+M.waitlist_count||0}}}
-function commit(d){S.today=+sd(d.cutoff);S.perf=d.perf;S.thumbs=d.thumbs||{};LAST5=d.last5;TOPALL=d.topAll;TOP30=d.top30;MED=d.median;META=d.meta;
+function commit(d){TT=d.tt||[];S.today=+sd(d.cutoff);S.perf=d.perf;S.thumbs=d.thumbs||{};LAST5=d.last5;TOPALL=d.topAll;TOP30=d.top30;MED=d.median;META=d.meta;
   D.geo=d.aud.map(r=>r.slice());
     GW=geoWeek();REACHTOT=rowsOf("Reached · age").reduce((a,r)=>a+r.v,0);
   win30=S.perf.filter(p=>p.date>=S.today-30*DAYMS);
   KNOWN={};[...S.perf,...LAST5,...TOPALL,...TOP30].forEach(p=>{if(p.title)KNOWN[p.date+"|"+p.views]=p})}
 function laneOf(){return "talk"}
 function dayX(){const m={};S.perf.forEach(p=>{const x=p.views/MED;if(!m[p.date]||x>m[p.date].x)m[p.date]={x}});return m}
+
+let PLAT="all";try{PLAT=localStorage.getItem("ndos-pub-plat")||"all"}catch(e){}
+const PL={all:"Both",ig:"Instagram",tt:"TikTok"};
+let TT=[];
+const pfb=pl=>pl==="tt"?`<span class="pf tt">TikTok</span>`:`<span class="pf ig">Instagram</span>`;
+const xc=x=>isNaN(x)?"var(--ink-soft)":x>=2?"var(--good)":x>=1.15?"color-mix(in srgb,var(--good) 70%,var(--ink))":x<=.75?"var(--warn)":"var(--ink)";
+const xs=x=>isNaN(x)?"–":x.toFixed(1)+"x";
+function platSeg(note){if(!TT.length)return "";return `<div class="ctrl2" style="margin:2px 0 10px;align-items:center"><div class="seg sm">${Object.entries(PL).map(([k,l])=>`<button data-plat="${k}" aria-pressed="${PLAT===k}">${l}</button>`).join("")}</div>${note?`<span class="small muted">${note}</span>`:""}</div>`}
+const pxOf=p=>p.plat==="tt"?p.x:p.views/MED;
+function recentP(){const ig=LAST5;if(PLAT==="ig"||!TT.length)return ig;const tt=TT.slice().sort((a,b)=>b.date-a.date).slice(0,5);if(PLAT==="tt")return tt;return ig.concat(tt).sort((a,b)=>b.date-a.date).slice(0,5)}
+function topP(w){const t30=S.today-30*DAYMS;const ig=w==="all"?TOPALL:TOP30;const tt=TT.filter(p=>w==="all"||p.date>=t30);const src=PLAT==="ig"?ig:PLAT==="tt"?tt:ig.concat(tt);return src.slice().sort((a,b)=>b.views-a.views)}
+function serP(k,days){const ig=series(k,days);if(PLAT==="ig"||k!=="views"||!TT.length)return ig;return ig.map(p=>{const t=TT.filter(q=>q.date===p.x).reduce((a,q)=>a+q.views,0);return {x:p.x,y:PLAT==="tt"?t:p.y+t}})}
 let TM="views",SPLITD=30,TR="30",topWin="all",sub=null;
 function series(k,days){const out=[];for(let i=days;i>=1;i--){const ms=S.today-i*DAYMS;out.push({x:ms,y:S.perf.filter(p=>p.date===ms).reduce((a,p)=>a+(p[k]||0),0)})}return out}
 const sum=(a,k)=>a.reduce((s,p)=>s+(p[k]||0),0);
 
 /* ---------- home ---------- */
 function tile(p){const b=p.b||{};const x=p.views/MED;
-  const stats=[fmt(p.likes)+" likes",fmt(p.comments)+" comments",fmt(p.saves)+" saves",fmt(p.shares)+" shares"];
-  return `<div class="pt" tabindex="0" role="button" aria-expanded="false">${thumbOf(p,"")}<div class="pv">${p.views>=1e6?short2(p.views):fmt(p.views)}</div><div class="px" style="color:${x>=2?"var(--good)":"var(--ink-soft)"}">${x>=100?fmt(x):x.toFixed(1)}x median</div><div class="pd">${esc(label(new Date(p.date)))} · ${esc(p.type)}</div><div class="hint">Tap for numbers</div><div class="more"><div class="chips">${!isNaN(p.skip)?`<span class="pill">${pct(p.skip)} skip</span>`:""}${stats.map(t=>`<span class="pill">${esc(t)}</span>`).join("")}</div></div><a class="ext" style="font-size:12.5px" href="${esc(b.link)}" target="_blank" rel="noopener">Watch ${arrow}</a></div>`}
+  const stats=[fmt(p.likes)+" likes",fmt(p.comments)+" comments"].concat(p.plat==="tt"?[]:[fmt(p.saves)+" saves"],[fmt(p.shares)+" shares"]);
+  const tk=p.plat==="tt";return `<div class="pt ${tk?"tt":"ig"}" tabindex="0" role="button" aria-expanded="false">${thumbOf(p,"")}<div class="pv">${p.views>=1e6?short2(p.views):fmt(p.views)}</div><div class="px" style="color:${xc(tk?p.x:x)}">${isNaN(tk?p.x:x)?"–":(tk?p.x:x)>=100?fmt(tk?p.x:x):(tk?p.x:x).toFixed(1)}x ${tk?"TikTok median":"median"}</div><div class="pd">${TT.length?pfb(tk?"tt":"ig")+" ":""}${esc(label(new Date(p.date)))} · ${esc(p.type)}</div><div class="hint">Tap for numbers</div><div class="more"><div class="chips">${!isNaN(p.skip)?`<span class="pill">${pct(p.skip)} skip</span>`:""}${stats.map(t=>`<span class="pill">${esc(t)}</span>`).join("")}</div></div><a class="ext ${tk?"tt":"ig"}" style="font-size:12.5px" href="${esc(b.link)}" target="_blank" rel="noopener">Watch${tk?" on TikTok":""} ${arrow}</a></div>`}
 function home(){
-  const v30=sum(win30,"views"),r30=sum(win30,"reach"),best=TOP30[0];const bx=best.views/MED;
+  const t30h=S.today-30*DAYMS;const ttw=TT.filter(p=>p.date>=t30h);const vIG=sum(win30,'views'),vTT=sum(ttw,'views');const v30=PLAT==='ig'?vIG:PLAT==='tt'?vTT:vIG+vTT,r30=sum(win30,'reach');const bl=topP('30');const best=bl[0]||TOP30[0];const bx=pxOf(best);
   let h=`<div class="card hero" style="margin-top:14px"><div class="ph">${esc(SNAP.heroTitle)}</div><p class="muted">${esc(SNAP.heroSub)}</p><button class="btn" type="button" data-join>Want this for yourself?</button></div>`;
-  h+=`<div class="kpis">${[["traj:views","Views",short2(v30),win30.length+" posts",spark(series("views",30).map(p=>p.y))],["traj:reach","Reach",short2(r30),fmt(r30/win30.length)+" per post",spark(series("reach",30).map(p=>p.y),"var(--hi)")]].map(k=>`<button class="kpi" data-panel="${k[0]}"><div class="k">${k[1]}</div><div class="v">${k[2]}</div><div class="s">${esc(k[3])}</div>${k[4]}</button>`).join("")}<div class="kpi"><div class="k">Best post</div><div class="v">${bx.toFixed(1)}x</div><div class="s">vs ${fmt(MED)} median</div>${spark(TOP30.map(p=>p.views).reverse(),"var(--good)")}</div></div>`;
-  h+=`<h2 class="sec">Recent Posts</h2><div class="pstrip">${LAST5.map(tile).join("")}</div>`;
-  h+=`<h2 class="sec">Top posts</h2><div class="ctrl2"><div class="seg sm"><button data-tw="all" aria-pressed="${topWin==="all"}">All time</button><button data-tw="30" aria-pressed="${topWin==="30"}">Last 30 days</button></div></div><div class="p3" id="toplist">${(topWin==="all"?TOPALL:TOP30).slice(0,3).map(tile).join("")}</div>`;
+  h+=platSeg(PLAT==="all"?"Instagram + TikTok together":"");
+  h+=`<div class="kpis">${[["traj:views","Views",short2(v30),(PLAT==="all"&&TT.length?"IG "+short2(vIG)+" · TT "+short2(vTT):(PLAT==="tt"?ttw.length:win30.length)+" posts"),spark(serP("views",30).map(p=>p.y),PLAT==="tt"?"var(--tt)":PLAT==="ig"?"var(--ig)":undefined)],["traj:reach","Reach",short2(r30),"Instagram · "+fmt(r30/win30.length)+" per post",spark(series("reach",30).map(p=>p.y),"var(--hi)")]].map(k=>`<button class="kpi" data-panel="${k[0]}"><div class="k">${k[1]}</div><div class="v">${k[2]}</div><div class="s">${esc(k[3])}</div>${k[4]}</button>`).join("")}<div class="kpi"><div class="k">Best post</div><div class="v" style="color:${xc(bx)}">${bx.toFixed(1)}x</div><div class="s">${best.plat==="tt"?"vs my TikTok median":"vs "+fmt(MED)+" median"}</div>${spark(bl.slice(0,10).map(p=>p.views).reverse(),"var(--good)")}</div></div>`;
+  h+=`<h2 class="sec">Recent Posts</h2><div class="pstrip">${recentP().map(tile).join("")}</div>`;
+  h+=`<h2 class="sec">Top posts</h2><div class="ctrl2"><div class="seg sm"><button data-tw="all" aria-pressed="${topWin==="all"}">All time</button><button data-tw="30" aria-pressed="${topWin==="30"}">Last 30 days</button></div></div><div class="p3" id="toplist">${topP(topWin).slice(0,3).map(tile).join("")}</div>`;
   const dd=donutData(30,"pillar");
   h+=`<div class="hub">`+hc({id:"split",title:"Views by pillar",viz:`<div class="dmini2">${donut(30,92,"pillar")}<div class="leg">${dd.top.slice(0,3).map(x=>`<div><span class="sw" style="background:${pcol(x.k)}"></span>${esc(PILLARS[x.k]?PILLARS[x.k][0]:x.k)} <b>${Math.round(x.views/dd.tot*100)}%</b></div>`).join("")}</div></div>`})+hc({id:"cal",title:"Posts by day",viz:calendar(5,26)});
   const tc=rowsOf("Reached · country").slice().sort((a,b)=>b.v-a.v).slice(0,3);
@@ -550,12 +573,12 @@ function ageBox(){const age=rowsOf(AGW+" · age"),gen=rowsOf(AGW+" · gender");c
 
 /* ---------- panels ---------- */
 const TMET={views:["Views","views"],reach:["Reach","reached"]};
-function trajPanel(){const days=+TR;const pts=series(TM,days);const rows=S.perf.filter(p=>p.date>=S.today-days*DAYMS);const bestDay=pts.reduce((a,p)=>p.y>a.y?p:a,{y:-1});
-  return `<h1 class="ph sm">Views by day</h1>
+function trajPanel(){if(PLAT==='tt')TM='views';const days=+TR;const pts=serP(TM,days);const rows=S.perf.filter(p=>p.date>=S.today-days*DAYMS);const bestDay=pts.reduce((a,p)=>p.y>a.y?p:a,{y:-1});
+  return `<h1 class="ph sm">Views by day</h1>${platSeg(PLAT==="tt"?"TikTok views by posting day":PLAT==="all"?"Reach is Instagram only":"")}
    <div class="fchips">${Object.entries(TMET).map(([k,v])=>`<button data-tm="${k}" aria-pressed="${TM===k}">${v[0]}</button>`).join("")}</div>
    <div class="ctrl2" style="margin-top:8px"><div class="seg sm">${[["7","7d"],["30","30d"]].map(([k,l])=>`<button data-tr="${k}" aria-pressed="${TR===k}">${l}</button>`).join("")}</div></div>
    <div class="card">${lineChart({pts,label:TMET[TM][0]+" per day",unit:TMET[TM][1],zero:true})}<div class="small muted" style="margin-top:6px">Each point is a day, counted on the day the post went up. Drag along the line for each day. Days I didn't post sit at zero.</div></div>
-   <div class="tsum"><div class="tsh">Last ${days} days</div><div><span>Views</span><b>${fmt(sum(rows,"views"))}</b></div><div><span>Reach</span><b>${fmt(sum(rows,"reach"))}</b></div><div><span>Posts</span><b>${rows.length}</b></div><div><span>Best day</span><b>${bestDay.y>0?esc(new Date(bestDay.x).getDate()+" "+MON[new Date(bestDay.x).getMonth()]):"–"}</b></div></div>`}
+   <div class="tsum"><div class="tsh">Last ${days} days</div><div><span>Views</span><b>${fmt(TM==="views"?pts.reduce((a,p)=>a+p.y,0):sum(rows,"views"))}</b></div><div><span>Reach</span><b>${fmt(sum(rows,"reach"))}</b></div><div><span>Posts</span><b>${rows.length}</b></div><div><span>Best day</span><b>${bestDay.y>0?esc(new Date(bestDay.x).getDate()+" "+MON[new Date(bestDay.x).getMonth()]):"–"}</b></div></div>`}
 function calP(){return `<h1 class="ph">Every post, by day</h1><div class="card">${calendar(5,40)}<div class="legend" style="margin-top:10px"><span style="--c:var(--good)">2x+ my normal</span><span style="--c:color-mix(in srgb,var(--good) 50%,transparent)">1.15–2x</span><span style="--c:var(--track)">normal</span><span style="--c:var(--bad)">0.75x or less</span><span style="--c:transparent;outline:1px solid var(--line)">no post</span></div><div class="small muted" style="margin-top:8px">Each square is a day, coloured by its best post against my median post. Tap a square for that day.</div></div>`}
 function dayPanel(ms){const rows=S.perf.filter(p=>p.date===ms).sort((a,b)=>b.views-a.views);const d=new Date(ms);
   const tv=sum(rows,"views"),tr=sum(rows,"reach");
@@ -579,8 +602,9 @@ function bind(){
   document.querySelectorAll("[data-panel]").forEach(el=>el.addEventListener("click",e=>{if(e.target.closest("a"))return;sub=el.dataset.panel;hideTip();render();window.scrollTo(0,0)}));
   document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>{sub=sub&&sub.startsWith("day:")?"cal":null;render();window.scrollTo(0,0)});
   document.querySelectorAll("[data-join]").forEach(b=>b.onclick=()=>{const j=$("#join");if(j)j.scrollIntoView({behavior:"smooth",block:"start"})});
-  document.querySelectorAll("[data-tw]").forEach(b=>b.onclick=()=>{topWin=b.dataset.tw;document.querySelectorAll("[data-tw]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#toplist").innerHTML=(topWin==="all"?TOPALL:TOP30).slice(0,3).map(tile).join("");bindTiles()});
+  document.querySelectorAll("[data-tw]").forEach(b=>b.onclick=()=>{topWin=b.dataset.tw;document.querySelectorAll("[data-tw]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#toplist").innerHTML=topP(topWin).slice(0,3).map(tile).join("");bindTiles()});
   bindTiles();bindAud();
+  document.querySelectorAll("[data-plat]").forEach(b=>b.onclick=()=>{PLAT=b.dataset.plat;try{localStorage.setItem("ndos-pub-plat",PLAT)}catch(e){}render()});
   document.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TM=b.dataset.tm;render()});
   document.querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>{TR=b.dataset.tr;render()});
   document.querySelectorAll("[data-sd]").forEach(b=>b.onclick=()=>{SPLITD=+b.dataset.sd;render()});
